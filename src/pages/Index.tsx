@@ -4,6 +4,7 @@ import { DashboardView } from '@/components/views/DashboardView';
 import { IncidentsView } from '@/components/views/IncidentsView';
 import { QueryView } from '@/components/views/QueryView';
 import { TimelineView } from '@/components/views/TimelineView';
+import { KnowledgeBaseView } from '@/components/views/KnowledgeBaseView';
 import { PlaceholderView } from '@/components/views/PlaceholderView';
 
 const Index = () => {
@@ -20,7 +21,7 @@ const Index = () => {
       case 'timeline':
         return <TimelineView />;
       case 'knowledge':
-        return <PlaceholderView title="Knowledge Base" description="Self-learning incident knowledge base with resolved incidents, analyst feedback, and AI corrections." />;
+        return <KnowledgeBaseView />;
       case 'reports':
         return <PlaceholderView title="Automated Reports" description="Generate daily, weekly, and monthly SOC reports with trends, KPIs, and actionable insights." />;
       case 'settings':
