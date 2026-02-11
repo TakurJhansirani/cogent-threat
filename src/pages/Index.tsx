@@ -7,6 +7,7 @@ import { TimelineView } from '@/components/views/TimelineView';
 import { KnowledgeBaseView } from '@/components/views/KnowledgeBaseView';
 import { ReportsView } from '@/components/views/ReportsView';
 import { RootCauseView } from '@/components/views/RootCauseView';
+import { SettingsView } from '@/components/views/SettingsView';
 import { PlaceholderView } from '@/components/views/PlaceholderView';
 
 const Index = () => {
@@ -29,7 +30,7 @@ const Index = () => {
       case 'analysis':
         return <RootCauseView />;
       case 'settings':
-        return <PlaceholderView title="Settings" description="Configure SIEM integrations, AI models, escalation rules, and user roles." />;
+        return <SettingsView />;
       default:
         return <DashboardView />;
     }
