@@ -6,6 +6,69 @@
 
 @layer base {
   :root {
+    --background: 0 0% 98%;
+    --foreground: 220 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+
+    --primary: 174 72% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 16% 30%;
+
+    --muted: 220 14% 95%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 217 80% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 20% 12%;
+
+    --success: 152 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --info: 200 80% 50%;
+    --info-foreground: 0 0% 100%;
+
+    --severity-critical: 0 72% 50%;
+    --severity-high: 25 95% 50%;
+    --severity-medium: 38 92% 50%;
+    --severity-low: 174 72% 40%;
+    --severity-info: 217 80% 50%;
+
+    --border: 220 14% 88%;
+    --input: 220 14% 88%;
+    --ring: 174 72% 40%;
+
+    --radius: 0.5rem;
+
+    --glow-primary: 0 0 20px hsl(174 72% 40% / 0.1);
+    --glow-accent: 0 0 20px hsl(217 80% 50% / 0.1);
+    --glow-destructive: 0 0 20px hsl(0 72% 50% / 0.1);
+
+    --sidebar-background: 220 16% 96%;
+    --sidebar-foreground: 220 16% 40%;
+    --sidebar-primary: 174 72% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 90%;
+    --sidebar-accent-foreground: 220 20% 12%;
+    --sidebar-border: 220 14% 90%;
+    --sidebar-ring: 174 72% 40%;
+
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-sans: 'Inter', system-ui, sans-serif;
+  }
+
+  .dark {
     --background: 220 20% 7%;
     --foreground: 210 20% 92%;
 
@@ -49,8 +112,6 @@
     --input: 220 14% 18%;
     --ring: 174 72% 50%;
 
-    --radius: 0.5rem;
-
     --glow-primary: 0 0 20px hsl(174 72% 50% / 0.15);
     --glow-accent: 0 0 20px hsl(217 80% 56% / 0.15);
     --glow-destructive: 0 0 20px hsl(0 72% 55% / 0.15);
@@ -63,9 +124,6 @@
     --sidebar-accent-foreground: 210 20% 92%;
     --sidebar-border: 220 14% 14%;
     --sidebar-ring: 174 72% 50%;
-
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-    --font-sans: 'Inter', system-ui, sans-serif;
   }
 }
 
@@ -77,6 +135,7 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* Custom scrollbar */
