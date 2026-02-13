@@ -1,5 +1,6 @@
 import { Bell, Search, Menu, Shield, Activity } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -30,6 +31,9 @@ export const TopBar = ({ onToggleSidebar }: TopBarProps) => {
             className="h-9 w-72 rounded-lg border border-border bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
           />
         </div>
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
 
         {/* Notifications */}
         <button className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
