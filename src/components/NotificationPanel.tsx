@@ -58,7 +58,7 @@ export const NotificationPanel = () => {
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[420px] p-0 border-border bg-card" align="end" sideOffset={8}>
+      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-[420px] max-w-[420px] p-0 border-border bg-card" align="end" sideOffset={8}>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">

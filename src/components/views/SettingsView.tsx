@@ -20,20 +20,22 @@ export const SettingsView = () => {
       </div>
 
       <Tabs defaultValue="siem" className="space-y-4">
-        <TabsList className="bg-secondary/50 border border-border">
-          <TabsTrigger value="siem" className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-            <Plug className="h-3.5 w-3.5" /> SIEM Integrations
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-            <Brain className="h-3.5 w-3.5" /> AI Models
-          </TabsTrigger>
-          <TabsTrigger value="escalation" className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-            <Bell className="h-3.5 w-3.5" /> Escalation Rules
-          </TabsTrigger>
-          <TabsTrigger value="roles" className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-            <Users className="h-3.5 w-3.5" /> User Roles
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+          <TabsList className="bg-secondary/50 border border-border w-max sm:w-auto">
+            <TabsTrigger value="siem" className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <Plug className="h-3.5 w-3.5" /> <span className="hidden sm:inline">SIEM</span> <span className="sm:hidden">SIEM</span>
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <Brain className="h-3.5 w-3.5" /> <span className="hidden sm:inline">AI Models</span> <span className="sm:hidden">AI</span>
+            </TabsTrigger>
+            <TabsTrigger value="escalation" className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <Bell className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Escalation Rules</span> <span className="sm:hidden">Rules</span>
+            </TabsTrigger>
+            <TabsTrigger value="roles" className="gap-1.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <Users className="h-3.5 w-3.5" /> <span className="hidden sm:inline">User Roles</span> <span className="sm:hidden">Roles</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="siem"><SIEMIntegrationSettings /></TabsContent>
         <TabsContent value="ai"><AIModelSettings /></TabsContent>
