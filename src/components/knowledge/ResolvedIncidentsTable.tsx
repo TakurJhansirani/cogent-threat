@@ -59,7 +59,7 @@ export const ResolvedIncidentsTable = ({ onSelectIncident, selectedId }: Resolve
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border p-4">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-primary" />
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -76,13 +76,13 @@ export const ResolvedIncidentsTable = ({ onSelectIncident, selectedId }: Resolve
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search resolved incidents..."
-            className="h-8 w-56 rounded-lg border border-border bg-background pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+            className="h-8 w-full sm:w-56 rounded-lg border border-border bg-background pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
           />
         </div>
       </div>
 
-      {/* Table Header */}
-      <div className="grid grid-cols-12 gap-2 border-b border-border bg-secondary/30 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      {/* Desktop Table Header - hidden on mobile */}
+      <div className="hidden md:grid grid-cols-12 gap-2 border-b border-border bg-secondary/30 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         <div className="col-span-1">ID</div>
         <div className="col-span-3">Title</div>
         <button onClick={() => toggleSort('severity')} className="col-span-1 flex items-center gap-1 hover:text-foreground transition-colors">
@@ -99,6 +99,24 @@ export const ResolvedIncidentsTable = ({ onSelectIncident, selectedId }: Resolve
         <div className="col-span-1">TTR</div>
       </div>
 
+      {/* Mobile sort controls */}
+      <div className="flex md:hidden items-center gap-1 border-b border-border px-4 py-2 overflow-x-auto">
+        <span className="text-[10px] text-muted-foreground mr-1 shrink-0">Sort:</span>
+        {(['resolvedAt', 'severity', 'aiAccuracy'] as const).map(field => (
+          <button
+            key={field}
+            onClick={() => toggleSort(field)}
+            className={cn(
+              'flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium whitespace-nowrap transition-colors',
+              sortField === field ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary'
+            )}
+          >
+            {field === 'resolvedAt' ? 'Date' : field === 'severity' ? 'Severity' : 'AI Acc.'}
+            <SortIcon field={field} />
+          </button>
+        ))}
+      </div>
+
       {/* Rows */}
       <div className="max-h-[400px] overflow-y-auto">
         {filtered.map((inc, index) => (
@@ -109,26 +127,53 @@ export const ResolvedIncidentsTable = ({ onSelectIncident, selectedId }: Resolve
             transition={{ delay: index * 0.04 }}
             onClick={() => onSelectIncident(inc)}
             className={cn(
-              'grid w-full grid-cols-12 gap-2 border-b border-border px-4 py-3 text-left text-xs transition-all duration-150',
+              'w-full border-b border-border text-left text-xs transition-all duration-150',
               selectedId === inc.id
                 ? 'bg-primary/5 border-l-2 border-l-primary'
                 : 'hover:bg-secondary/40'
             )}
           >
-            <span className="col-span-1 font-mono text-muted-foreground">{inc.id.split('-').pop()}</span>
-            <span className="col-span-3 font-medium text-foreground truncate">{inc.title}</span>
-            <div className="col-span-1">
-              <SeverityBadge severity={inc.severity} />
+            {/* Desktop row */}
+            <div className="hidden md:grid grid-cols-12 gap-2 px-4 py-3">
+              <span className="col-span-1 font-mono text-muted-foreground">{inc.id.split('-').pop()}</span>
+              <span className="col-span-3 font-medium text-foreground truncate">{inc.title}</span>
+              <div className="col-span-1">
+                <SeverityBadge severity={inc.severity} />
+              </div>
+              <span className="col-span-2 text-muted-foreground">{inc.category}</span>
+              <span className="col-span-2 font-mono text-muted-foreground">
+                {new Date(inc.resolvedAt).toLocaleDateString()}
+              </span>
+              <span className="col-span-1 text-muted-foreground truncate">{inc.resolvedBy.split(' ')[0]}</span>
+              <span className={cn('col-span-1 font-mono font-medium', inc.aiAccuracy >= 85 ? 'text-success' : inc.aiAccuracy >= 75 ? 'text-warning' : 'text-destructive')}>
+                {inc.aiAccuracy}%
+              </span>
+              <span className="col-span-1 font-mono text-muted-foreground">{inc.ttr}m</span>
             </div>
-            <span className="col-span-2 text-muted-foreground">{inc.category}</span>
-            <span className="col-span-2 font-mono text-muted-foreground">
-              {new Date(inc.resolvedAt).toLocaleDateString()}
-            </span>
-            <span className="col-span-1 text-muted-foreground truncate">{inc.resolvedBy.split(' ')[0]}</span>
-            <span className={cn('col-span-1 font-mono font-medium', inc.aiAccuracy >= 85 ? 'text-success' : inc.aiAccuracy >= 75 ? 'text-warning' : 'text-destructive')}>
-              {inc.aiAccuracy}%
-            </span>
-            <span className="col-span-1 font-mono text-muted-foreground">{inc.ttr}m</span>
+
+            {/* Mobile card */}
+            <div className="md:hidden px-4 py-3 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-foreground truncate">{inc.title}</span>
+                <SeverityBadge severity={inc.severity} />
+              </div>
+              <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                <span className="font-mono">{inc.id.split('-').pop()}</span>
+                <span>{inc.category}</span>
+                <span className="font-mono">{new Date(inc.resolvedAt).toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center gap-3 text-[10px]">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <User className="h-3 w-3" /> {inc.resolvedBy.split(' ')[0]}
+                </span>
+                <span className={cn('font-mono font-medium flex items-center gap-1', inc.aiAccuracy >= 85 ? 'text-success' : inc.aiAccuracy >= 75 ? 'text-warning' : 'text-destructive')}>
+                  <Brain className="h-3 w-3" /> {inc.aiAccuracy}%
+                </span>
+                <span className="font-mono text-muted-foreground flex items-center gap-1">
+                  <Timer className="h-3 w-3" /> {inc.ttr}m
+                </span>
+              </div>
+            </div>
           </motion.button>
         ))}
       </div>

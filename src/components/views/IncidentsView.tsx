@@ -72,10 +72,21 @@ export const IncidentsView = () => {
           onSelectIncident={setSelectedIncident}
           selectedId={selectedIncident?.id}
         />
-        <IncidentDetail
-          incident={selectedIncident}
-          onClose={() => setSelectedIncident(null)}
-        />
+        {/* Mobile: overlay when selected */}
+        {selectedIncident && (
+          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm lg:hidden" onClick={() => setSelectedIncident(null)} />
+        )}
+        <div className={cn(
+          'lg:block',
+          selectedIncident
+            ? 'fixed inset-x-0 bottom-0 top-16 z-50 overflow-y-auto bg-background p-3 lg:relative lg:inset-auto lg:z-auto lg:p-0 lg:bg-transparent'
+            : 'hidden lg:block'
+        )}>
+          <IncidentDetail
+            incident={selectedIncident}
+            onClose={() => setSelectedIncident(null)}
+          />
+        </div>
       </div>
     </div>
   );
