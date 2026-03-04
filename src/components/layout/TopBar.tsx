@@ -1,4 +1,5 @@
-import { Menu, Shield, Activity, Search, WifiOff } from 'lucide-react';
+import { Menu, Shield, Activity, Search, WifiOff, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationPanel } from '@/components/NotificationPanel';
 import { GlobalSearch } from '@/components/GlobalSearch';
@@ -11,6 +12,7 @@ interface TopBarProps {
 
 export const TopBar = ({ onToggleSidebar, onNavigate }: TopBarProps) => {
   const isOffline = useOfflineStatus();
+  const { user, signOut } = useAuth();
 
   return (
     <>
@@ -60,10 +62,17 @@ export const TopBar = ({ onToggleSidebar, onNavigate }: TopBarProps) => {
             <Shield className="h-3 w-3 text-primary" />
           </div>
           <div>
-            <p className="text-xs font-medium text-foreground">SOC Analyst</p>
-            <p className="text-[10px] text-muted-foreground">Tier 2</p>
+            <p className="text-xs font-medium text-foreground truncate max-w-[120px]">{user?.email?.split('@')[0] ?? 'Analyst'}</p>
+            <p className="text-[10px] text-muted-foreground">SOC Analyst</p>
           </div>
         </div>
+        <button
+          onClick={signOut}
+          className="flex items-center justify-center h-9 w-9 rounded-lg border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
+          title="Sign out"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
       </header>
     </>
