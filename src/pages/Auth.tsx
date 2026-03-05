@@ -80,7 +80,6 @@ const Auth = () => {
     }
   };
 
-  if (signupSuccess) {
   if (resetSent) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background bg-grid-pattern p-4">
@@ -135,7 +134,8 @@ const Auth = () => {
     );
   }
 
-  return (
+  if (signupSuccess) {
+    return (
       <div className="flex min-h-screen items-center justify-center bg-background bg-grid-pattern p-4">
         <Card className="w-full max-w-md border-border">
           <CardHeader className="items-center text-center">
