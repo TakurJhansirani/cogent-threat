@@ -65,7 +65,7 @@ export const TopBar = ({ onToggleSidebar, onNavigate }: TopBarProps) => {
           </div>
           <div>
             <p className="text-xs font-medium text-foreground truncate max-w-[120px]">{user?.email?.split('@')[0] ?? 'Analyst'}</p>
-            <p className="text-[10px] text-muted-foreground">SOC Analyst</p>
+            <p className="text-[10px] text-muted-foreground capitalize">{role ?? 'User'}</p>
           </div>
         </div>
         <button
