@@ -1,5 +1,6 @@
 import { Menu, Shield, Activity, Search, WifiOff, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationPanel } from '@/components/NotificationPanel';
 import { GlobalSearch } from '@/components/GlobalSearch';
@@ -13,6 +14,7 @@ interface TopBarProps {
 export const TopBar = ({ onToggleSidebar, onNavigate }: TopBarProps) => {
   const isOffline = useOfflineStatus();
   const { user, signOut } = useAuth();
+  const { role } = useUserRole();
 
   return (
     <>
@@ -63,7 +65,7 @@ export const TopBar = ({ onToggleSidebar, onNavigate }: TopBarProps) => {
           </div>
           <div>
             <p className="text-xs font-medium text-foreground truncate max-w-[120px]">{user?.email?.split('@')[0] ?? 'Analyst'}</p>
-            <p className="text-[10px] text-muted-foreground">SOC Analyst</p>
+            <p className="text-[10px] text-muted-foreground capitalize">{role ?? 'User'}</p>
           </div>
         </div>
         <button

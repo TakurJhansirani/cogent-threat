@@ -11,8 +11,13 @@ import {
   Zap,
   Brain,
   GitBranch,
+  Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUserRole } from '@/hooks/useUserRole';
+import type { Database as DB } from '@/integrations/supabase/types';
+
+type AppRole = DB['public']['Enums']['app_role'];
 
 interface SidebarProps {
   collapsed: boolean;
@@ -21,21 +26,36 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-const navItems = [
+interface NavItem {
+  id: string;
+  label: string;
+  icon: any;
+  roles?: AppRole[]; // if undefined, all roles can see it
+}
+
+const navItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'incidents', label: 'Incidents', icon: Shield },
-  { id: 'query', label: 'AI Query', icon: Brain },
+  { id: 'query', label: 'AI Query', icon: Brain, roles: ['admin', 'analyst'] },
   { id: 'timeline', label: 'Timeline', icon: Clock },
-  { id: 'knowledge', label: 'Knowledge Base', icon: Database },
+  { id: 'knowledge', label: 'Knowledge Base', icon: Database, roles: ['admin', 'analyst'] },
   { id: 'reports', label: 'Reports', icon: FileText },
-  { id: 'analysis', label: 'Root Cause', icon: GitBranch },
+  { id: 'analysis', label: 'Root Cause', icon: GitBranch, roles: ['admin', 'analyst'] },
 ];
 
-const bottomItems = [
-  { id: 'settings', label: 'Settings', icon: Settings },
+const bottomItems: NavItem[] = [
+  { id: 'settings', label: 'Settings', icon: Settings, roles: ['admin'] },
 ];
 
 export const Sidebar = ({ collapsed, activeView, onViewChange, onToggle }: SidebarProps) => {
+  const { role, loading } = useUserRole();
+
+  const filterByRole = (items: NavItem[]) =>
+    items.filter((item) => !item.roles || (role && item.roles.includes(role)));
+
+  const visibleNav = filterByRole(navItems);
+  const visibleBottom = filterByRole(bottomItems);
+
   return (
     <aside
       className={cn(
@@ -56,9 +76,19 @@ export const Sidebar = ({ collapsed, activeView, onViewChange, onToggle }: Sideb
         )}
       </div>
 
+      {/* Role badge */}
+      {!collapsed && role && (
+        <div className="mx-3 mt-3 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-3 py-1.5">
+          <Lock className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            {role}
+          </span>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-2 py-4">
-        {navItems.map((item) => {
+        {visibleNav.map((item) => {
           const Icon = item.icon;
           const isActive = activeView === item.id;
           return (
@@ -83,21 +113,23 @@ export const Sidebar = ({ collapsed, activeView, onViewChange, onToggle }: Sideb
       </nav>
 
       {/* Bottom */}
-      <div className="border-t border-sidebar-border px-2 py-4">
-        {bottomItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onViewChange(item.id)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-3 sm:py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-[0.98]"
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
-            </button>
-          );
-        })}
-      </div>
+      {visibleBottom.length > 0 && (
+        <div className="border-t border-sidebar-border px-2 py-4">
+          {visibleBottom.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onViewChange(item.id)}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-3 sm:py-2.5 text-sm font-medium text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:scale-[0.98]"
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {!collapsed && <span>{item.label}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Toggle */}
       <button
