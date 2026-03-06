@@ -14,6 +14,7 @@ interface TopBarProps {
 export const TopBar = ({ onToggleSidebar, onNavigate }: TopBarProps) => {
   const isOffline = useOfflineStatus();
   const { user, signOut } = useAuth();
+  const { role } = useUserRole();
 
   return (
     <>
