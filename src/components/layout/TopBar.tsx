@@ -1,5 +1,6 @@
 import { Menu, Shield, Activity, Search, WifiOff, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationPanel } from '@/components/NotificationPanel';
 import { GlobalSearch } from '@/components/GlobalSearch';

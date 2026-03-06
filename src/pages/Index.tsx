@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Loader2 } from 'lucide-react';
 import { DashboardView } from '@/components/views/DashboardView';
@@ -11,13 +12,14 @@ import { KnowledgeBaseView } from '@/components/views/KnowledgeBaseView';
 import { ReportsView } from '@/components/views/ReportsView';
 import { RootCauseView } from '@/components/views/RootCauseView';
 import { SettingsView } from '@/components/views/SettingsView';
-import { PlaceholderView } from '@/components/views/PlaceholderView';
+import { AccessDeniedView } from '@/components/views/AccessDeniedView';
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { role, loading: roleLoading, isAdmin, canWrite } = useUserRole();
   const [activeView, setActiveView] = useState('dashboard');
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -36,17 +38,17 @@ const Index = () => {
       case 'incidents':
         return <IncidentsView />;
       case 'query':
-        return <QueryView />;
+        return canWrite ? <QueryView /> : <AccessDeniedView onGoBack={() => setActiveView('dashboard')} />;
       case 'timeline':
         return <TimelineView />;
       case 'knowledge':
-        return <KnowledgeBaseView />;
+        return canWrite ? <KnowledgeBaseView /> : <AccessDeniedView onGoBack={() => setActiveView('dashboard')} />;
       case 'reports':
         return <ReportsView />;
       case 'analysis':
-        return <RootCauseView />;
+        return canWrite ? <RootCauseView /> : <AccessDeniedView onGoBack={() => setActiveView('dashboard')} />;
       case 'settings':
-        return <SettingsView />;
+        return isAdmin ? <SettingsView /> : <AccessDeniedView onGoBack={() => setActiveView('dashboard')} />;
       default:
         return <DashboardView />;
     }
