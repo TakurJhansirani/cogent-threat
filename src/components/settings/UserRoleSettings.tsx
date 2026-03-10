@@ -1,37 +1,87 @@
-import { useState } from 'react';
-import { Users, Shield, Clock, MoreHorizontal } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Shield, MoreHorizontal, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from '@/hooks/useUserRole';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import type { Database } from '@/integrations/supabase/types';
 
-type Role = 'admin' | 'analyst-t2' | 'analyst-t1' | 'viewer';
+type AppRole = Database['public']['Enums']['app_role'];
 
 interface UserEntry {
   id: string;
-  name: string;
-  email: string;
-  role: Role;
-  lastActive: string;
-  status: 'online' | 'offline';
+  display_name: string | null;
+  role: AppRole;
 }
 
-const roleConfig: Record<Role, { label: string; className: string }> = {
+const roleConfig: Record<AppRole, { label: string; className: string }> = {
   admin: { label: 'Admin', className: 'bg-destructive/10 text-destructive border-destructive/20' },
-  'analyst-t2': { label: 'Tier 2 Analyst', className: 'bg-warning/10 text-warning border-warning/20' },
-  'analyst-t1': { label: 'Tier 1 Analyst', className: 'bg-primary/10 text-primary border-primary/20' },
-  viewer: { label: 'Viewer', className: 'bg-info/10 text-info border-info/20' },
+  analyst: { label: 'Analyst', className: 'bg-primary/10 text-primary border-primary/20' },
+  viewer: { label: 'Viewer', className: 'bg-muted text-muted-foreground border-border' },
 };
 
-const initialUsers: UserEntry[] = [
-  { id: 'u1', name: 'Sarah Chen', email: 'sarah.chen@ragis.io', role: 'admin', lastActive: '2024-12-15T14:32:00Z', status: 'online' },
-  { id: 'u2', name: 'Marcus Webb', email: 'marcus.webb@ragis.io', role: 'analyst-t2', lastActive: '2024-12-15T14:28:00Z', status: 'online' },
-  { id: 'u3', name: 'Aiko Tanaka', email: 'aiko.tanaka@ragis.io', role: 'analyst-t2', lastActive: '2024-12-15T13:15:00Z', status: 'online' },
-  { id: 'u4', name: 'James Rivera', email: 'james.rivera@ragis.io', role: 'analyst-t1', lastActive: '2024-12-15T12:00:00Z', status: 'offline' },
-  { id: 'u5', name: 'Priya Sharma', email: 'priya.sharma@ragis.io', role: 'analyst-t1', lastActive: '2024-12-15T11:45:00Z', status: 'online' },
-  { id: 'u6', name: 'David Kim', email: 'david.kim@ragis.io', role: 'viewer', lastActive: '2024-12-14T16:00:00Z', status: 'offline' },
-];
+const allRoles: AppRole[] = ['admin', 'analyst', 'viewer'];
 
 export const UserRoleSettings = () => {
-  const [users] = useState(initialUsers);
+  const { isAdmin } = useUserRole();
+  const [users, setUsers] = useState<UserEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    const { data: roles, error: rolesErr } = await supabase
+      .from('user_roles')
+      .select('user_id, role');
+
+    if (rolesErr) {
+      toast.error('Failed to load users');
+      setLoading(false);
+      return;
+    }
+
+    const userIds = (roles || []).map(r => r.user_id);
+
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', userIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.id, p.display_name]));
+
+    setUsers(
+      (roles || []).map(r => ({
+        id: r.user_id,
+        display_name: profileMap.get(r.user_id) || 'Unknown',
+        role: r.role,
+      }))
+    );
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
+
+  const changeRole = async (userId: string, newRole: AppRole) => {
+    setUpdating(userId);
+    const { error } = await supabase
+      .from('user_roles')
+      .update({ role: newRole })
+      .eq('user_id', userId);
+
+    if (error) {
+      toast.error('Failed to update role');
+    } else {
+      toast.success(`Role updated to ${roleConfig[newRole].label}`);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    }
+    setUpdating(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -41,72 +91,68 @@ export const UserRoleSettings = () => {
             <h2 className="text-sm font-semibold text-foreground">User & Role Management</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Manage analyst access levels and permissions</p>
           </div>
-          <button
-            onClick={() => toast.info('Invite flow coming soon')}
-            className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/80 transition-colors"
-          >
-            <Users className="h-3 w-3" /> Invite User
-          </button>
         </div>
 
         {/* Role summary */}
-        <div className="grid grid-cols-4 gap-3 mb-4">
-          {(Object.entries(roleConfig) as [Role, typeof roleConfig[Role]][]).map(([role, config]) => (
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {allRoles.map(role => (
             <div key={role} className="rounded-lg border border-border bg-secondary/50 p-3 text-center">
               <p className="text-lg font-bold text-foreground">{users.filter(u => u.role === role).length}</p>
-              <p className={cn('text-[10px] font-semibold uppercase tracking-wider', config.className.split(' ').find(c => c.startsWith('text-')))}>{config.label}s</p>
+              <p className={cn('text-[10px] font-semibold uppercase tracking-wider', roleConfig[role].className.split(' ').find(c => c.startsWith('text-')))}>{roleConfig[role].label}s</p>
             </div>
           ))}
         </div>
 
-        {/* User table */}
-        <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-secondary/50">
-                <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">User</th>
-                <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Role</th>
-                <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Last Active</th>
-                <th className="px-4 py-2.5 w-10"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
-                  <td className="px-4 py-3">
-                    <p className="text-sm font-medium text-foreground">{user.name}</p>
-                    <p className="text-[10px] font-mono text-muted-foreground">{user.email}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-semibold', roleConfig[user.role].className)}>
-                      {roleConfig[user.role].label}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <div className={cn('h-2 w-2 rounded-full', user.status === 'online' ? 'bg-success' : 'bg-muted-foreground/40')} />
-                      <span className="text-xs text-muted-foreground capitalize">{user.status}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="text-xs font-mono text-muted-foreground">
-                      {new Date(user.lastActive).toLocaleString()}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => toast.info('User edit coming soon')}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </button>
-                  </td>
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="rounded-lg border border-border overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-secondary/50">
+                  <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">User</th>
+                  <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Role</th>
+                  {isAdmin && <th className="px-4 py-2.5 w-10"></th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {users.map(user => (
+                  <tr key={user.id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-medium text-foreground">{user.display_name}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground">{user.id.slice(0, 8)}…</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={cn('rounded-md border px-2 py-0.5 text-[10px] font-semibold', roleConfig[user.role].className)}>
+                        {roleConfig[user.role].label}
+                      </span>
+                    </td>
+                    {isAdmin && (
+                      <td className="px-4 py-3">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="text-muted-foreground hover:text-foreground transition-colors" disabled={updating === user.id}>
+                              {updating === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreHorizontal className="h-4 w-4" />}
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {allRoles.filter(r => r !== user.role).map(r => (
+                              <DropdownMenuItem key={r} onClick={() => changeRole(user.id, r)}>
+                                Set as {roleConfig[r].label}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
